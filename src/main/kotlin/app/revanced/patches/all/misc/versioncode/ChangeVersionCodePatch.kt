@@ -1,4 +1,4 @@
-package app.revanced.patches.reddit.misc.versioncode
+package app.revanced.patches.all.misc.versioncode
 
 import app.revanced.patcher.ResourceContext
 import app.revanced.patcher.annotation.Description
@@ -8,7 +8,6 @@ import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.patch.PatchOption
 import app.revanced.patcher.patch.ResourcePatch
 import app.revanced.patcher.patch.annotations.Patch
-import app.revanced.patches.reddit.utils.annotation.RedditCompatibility
 import app.revanced.util.ResourceUtils.manifestEditor
 import app.revanced.util.ResourceUtils.valueOrThrow
 import org.w3c.dom.Element
@@ -17,8 +16,8 @@ import org.w3c.dom.Element
 @Name("Change version code")
 @Description("Changes the version code of the app. By default the highest version code is set. " +
         "This allows older versions of an app to be installed " +
-        "if their version code is set to the same or a higher value and can stop app stores to update the app.")
-@RedditCompatibility
+        "if their version code is set to the same or a higher value and can stop app stores to update the app. " +
+        "This does not apply when installing with root install (mount).")
 @Suppress("unused")
 class ChangeVersionCodePatch : ResourcePatch {
     companion object : OptionsContainer() {
