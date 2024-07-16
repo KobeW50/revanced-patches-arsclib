@@ -10,14 +10,17 @@ import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
 import app.revanced.patches.reddit.utils.integrations.Constants.INTEGRATIONS_PATH
 import app.revanced.patches.reddit.utils.settings.fingerprints.AcknowledgementsLabelBuilderFingerprint
 import app.revanced.patches.reddit.utils.settings.fingerprints.OssLicensesMenuActivityOnCreateFingerprint
+import app.revanced.patches.reddit.utils.settings.fingerprints.RedditInternalFeaturesFingerprint
 import app.revanced.patches.reddit.utils.settings.fingerprints.SettingsStatusLoadFingerprint
 import app.revanced.patches.shared.settings.fingerprints.SharedSettingFingerprint
 import app.revanced.util.getInstruction
 import app.revanced.util.getStringInstructionIndex
 import app.revanced.util.getTargetIndexOrThrow
 import app.revanced.util.getTargetIndexWithMethodReferenceNameReversedOrThrow
+import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.resultOrThrow
 import org.jf.dexlib2.Opcode
+import org.jf.dexlib2.builder.instruction.BuilderInstruction21c
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction
 
 @RequiresIntegrations
@@ -25,6 +28,7 @@ class SettingsBytecodePatch : BytecodePatch(
     listOf(
         AcknowledgementsLabelBuilderFingerprint,
         OssLicensesMenuActivityOnCreateFingerprint,
+        RedditInternalFeaturesFingerprint,
         SharedSettingFingerprint,
         SettingsStatusLoadFingerprint,
     )
@@ -35,6 +39,8 @@ class SettingsBytecodePatch : BytecodePatch(
 
         private lateinit var acknowledgementsLabelBuilderMethod: MutableMethod
         private lateinit var settingsStatusLoadMethod: MutableMethod
+
+        internal var upward202426 = false
 
         internal fun updateSettingsLabel(label: String) =
             acknowledgementsLabelBuilderMethod.apply {
@@ -57,9 +63,12 @@ class SettingsBytecodePatch : BytecodePatch(
             )
     }
 
-    lateinit var contexts: BytecodeContext
-
     override fun execute(context: BytecodeContext) {
+
+        /**
+         * Set version info
+         */
+        setVersionInfo()
 
         /**
          * Set SharedPrefCategory
@@ -100,5 +109,17 @@ class SettingsBytecodePatch : BytecodePatch(
         }
 
         settingsStatusLoadMethod = SettingsStatusLoadFingerprint.resultOrThrow().mutableMethod
+    }
+
+    private fun setVersionInfo() {
+        RedditInternalFeaturesFingerprint.resultOrThrow().mutableMethod.apply {
+            val versionIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.CONST_STRING
+                        && (this as? BuilderInstruction21c)?.reference.toString().startsWith("202")
+            }
+
+            val versionNumber = getInstruction<BuilderInstruction21c>(versionIndex).reference.toString().replace(".", "").toInt()
+            upward202426 = versionNumber >= 2024260
+        }
     }
 }
