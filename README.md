@@ -9,12 +9,11 @@ The official Patch bundle provided by ReVanced and the community.
 
 | 💊 Patch | 📜 Description | 🏹 Target Version |
 |:--------:|:--------------:|:-----------------:|
-| `Change version code` | Changes the version code of the app. By default the highest version code is set. This allows older versions of an app to be installed if their version code is set to the same or a higher value and can stop app stores to update the app. | ALL |
 | `Custom branding name for Reddit` | Renames the Reddit app to the name specified in options.json. | ALL |
 | `Disable screenshot popup` | Adds an option to disable the popup that appears when taking a screenshot. | ALL |
 | `Hide Recently Visited shelf` | Adds an option to hide the Recently Visited shelf in the sidebar. | ALL |
 | `Hide ads` | Adds options to hide ads. | ALL |
-| `Hide navigation buttons` | Adds options to hide buttons in the navigation bar. | ALL |
+| `Hide navigation buttons` | Adds options to hide buttons in the navigation bar. | 2024.25.3 |
 | `Hide recommended communities shelf` | Adds an option to hide the recommended communities shelves in subreddits. | ALL |
 | `Open links directly` | Adds an option to skip over redirection URLs in external links. | ALL |
 | `Open links externally` | Adds an option to always open links in your browser instead of in the in-app-browser. | ALL |
