@@ -8,6 +8,7 @@ internal object CommunityRecommendationSectionParentFingerprint : MethodFingerpr
     returnType = "Ljava/lang/String;",
     accessFlags = AccessFlags.PUBLIC or AccessFlags.FINAL,
     parameters = emptyList(),
+    strings = listOf("community_recomendation_section_"),
     customFingerprint = { methodDef, _ ->
         methodDef.definingClass.startsWith("Lcom/reddit/onboardingfeedscomponents/communityrecommendation/impl/")
                 && methodDef.name == "key"
