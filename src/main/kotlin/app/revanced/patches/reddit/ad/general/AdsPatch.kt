@@ -6,7 +6,6 @@ import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.patch.BytecodePatch
-import app.revanced.patcher.patch.PatchException
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
 import app.revanced.patcher.patch.annotations.RequiresIntegrations
@@ -14,17 +13,20 @@ import app.revanced.patches.reddit.ad.banner.BannerAdsPatch
 import app.revanced.patches.reddit.ad.comments.CommentAdsPatch
 import app.revanced.patches.reddit.ad.general.fingerprints.AdPostFingerprint
 import app.revanced.patches.reddit.ad.general.fingerprints.NewAdPostFingerprint
-import app.revanced.patches.reddit.ad.general.fingerprints.NewAdPostFingerprint.indexOfAddArrayList
 import app.revanced.patches.reddit.utils.annotation.RedditCompatibility
 import app.revanced.patches.reddit.utils.integrations.Constants.PATCHES_PATH
 import app.revanced.patches.reddit.utils.settings.SettingsBytecodePatch.Companion.updateSettingsStatus
 import app.revanced.patches.reddit.utils.settings.SettingsPatch
 import app.revanced.util.getInstruction
-import app.revanced.util.getStringInstructionIndex
-import app.revanced.util.getTargetIndexWithFieldReferenceNameOrThrow
+import app.revanced.util.getReference
+import app.revanced.util.indexOfFirstInstructionOrThrow
+import app.revanced.util.indexOfFirstStringInstructionOrThrow
 import app.revanced.util.resultOrThrow
+import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.instruction.FiveRegisterInstruction
 import org.jf.dexlib2.iface.instruction.TwoRegisterInstruction
+import org.jf.dexlib2.iface.reference.FieldReference
+import org.jf.dexlib2.iface.reference.MethodReference
 
 @Patch
 @Name("Hide ads")
@@ -48,7 +50,9 @@ class AdsPatch : BytecodePatch(
         // region Filter promoted ads (does not work in popular or latest feed)
         AdPostFingerprint.resultOrThrow().let {
             it.mutableMethod.apply {
-                val targetIndex = getTargetIndexWithFieldReferenceNameOrThrow("children")
+                val targetIndex = indexOfFirstInstructionOrThrow {
+                    getReference<FieldReference>()?.name == "children"
+                }
                 val targetRegister = getInstruction<TwoRegisterInstruction>(targetIndex).registerA
 
                 addInstructions(
@@ -64,9 +68,11 @@ class AdsPatch : BytecodePatch(
         // AdElementConverter is conveniently responsible for inserting all feed ads.
         // By removing the appending instruction no ad posts gets appended to the feed.
         NewAdPostFingerprint.resultOrThrow().mutableMethod.apply {
-            val stringIndex = getStringInstructionIndex("android_feed_freeform_render_variant")
-            val targetIndex = indexOfAddArrayList(this, stringIndex)
-            if (targetIndex < 0) throw PatchException("Could not find insert indexes")
+            val stringIndex = indexOfFirstStringInstructionOrThrow("android_feed_freeform_render_variant")
+            val targetIndex = indexOfFirstInstructionOrThrow (stringIndex) {
+                opcode == Opcode.INVOKE_VIRTUAL
+                        && getReference<MethodReference>()?.toString() == "Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z"
+            }
             val targetInstruction = getInstruction<FiveRegisterInstruction>(targetIndex)
 
             replaceInstruction(

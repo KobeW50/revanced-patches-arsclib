@@ -20,6 +20,7 @@ internal object RedditAlertDialogsFingerprint : MethodFingerprint(
 ) {
     fun indexOfSetBackgroundTintListInstruction(methodDef: Method) =
         methodDef.indexOfFirstInstruction {
-            opcode == Opcode.INVOKE_VIRTUAL && getReference<MethodReference>()?.name == "setBackgroundTintList"
+            opcode == Opcode.INVOKE_VIRTUAL &&
+                    getReference<MethodReference>()?.name == "setBackgroundTintList"
         }
 }

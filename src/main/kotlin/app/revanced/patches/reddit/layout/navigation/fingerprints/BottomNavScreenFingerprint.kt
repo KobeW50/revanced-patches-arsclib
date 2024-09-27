@@ -3,9 +3,12 @@ package app.revanced.patches.reddit.layout.navigation.fingerprints
 import app.revanced.patcher.extensions.or
 import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patches.reddit.layout.navigation.fingerprints.BottomNavScreenFingerprint.indexOfGetDimensionPixelSize
-import app.revanced.util.getTargetIndexWithMethodReferenceName
+import app.revanced.util.getReference
+import app.revanced.util.indexOfFirstInstruction
 import org.jf.dexlib2.AccessFlags
+import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.Method
+import org.jf.dexlib2.iface.reference.MethodReference
 
 internal object BottomNavScreenFingerprint : MethodFingerprint(
     returnType = "Landroid/view/View;",
@@ -16,5 +19,8 @@ internal object BottomNavScreenFingerprint : MethodFingerprint(
     }
 ) {
     fun indexOfGetDimensionPixelSize(methodDef: Method) =
-        methodDef.getTargetIndexWithMethodReferenceName("getDimensionPixelSize")
+        methodDef.indexOfFirstInstruction {
+            opcode == Opcode.INVOKE_VIRTUAL &&
+                    getReference<MethodReference>()?.toString() == "Landroid/content/res/Resources;->getDimensionPixelSize(I)I"
+        }
 }

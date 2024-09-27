@@ -14,7 +14,7 @@ import app.revanced.patches.reddit.utils.integrations.Constants.PATCHES_PATH
 import app.revanced.patches.reddit.utils.settings.SettingsBytecodePatch.Companion.updateSettingsStatus
 import app.revanced.patches.reddit.utils.settings.SettingsPatch
 import app.revanced.util.getInstruction
-import app.revanced.util.getStringInstructionIndex
+import app.revanced.util.indexOfFirstStringInstructionOrThrow
 
 @Patch
 @Name("Open links externally")
@@ -31,7 +31,7 @@ class OpenLinksExternallyPatch : BytecodePatch() {
     override fun execute(context: BytecodeContext) {
 
         screenNavigatorMethod.apply {
-            val insertIndex = getStringInstructionIndex("uri") + 2
+            val insertIndex = indexOfFirstStringInstructionOrThrow("uri") + 2
 
             addInstructions(
                 insertIndex, """

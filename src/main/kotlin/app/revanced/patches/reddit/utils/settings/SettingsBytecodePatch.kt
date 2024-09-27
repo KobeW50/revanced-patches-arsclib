@@ -14,14 +14,15 @@ import app.revanced.patches.reddit.utils.settings.fingerprints.RedditInternalFea
 import app.revanced.patches.reddit.utils.settings.fingerprints.SettingsStatusLoadFingerprint
 import app.revanced.patches.shared.settings.fingerprints.SharedSettingFingerprint
 import app.revanced.util.getInstruction
-import app.revanced.util.getStringInstructionIndex
-import app.revanced.util.getTargetIndexOrThrow
-import app.revanced.util.getTargetIndexWithMethodReferenceNameReversedOrThrow
+import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
+import app.revanced.util.indexOfFirstInstructionReversedOrThrow
+import app.revanced.util.indexOfFirstStringInstructionOrThrow
 import app.revanced.util.resultOrThrow
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.builder.instruction.BuilderInstruction21c
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction
+import org.jf.dexlib2.iface.reference.MethodReference
 
 @RequiresIntegrations
 class SettingsBytecodePatch : BytecodePatch(
@@ -44,9 +45,11 @@ class SettingsBytecodePatch : BytecodePatch(
 
         internal fun updateSettingsLabel(label: String) =
             acknowledgementsLabelBuilderMethod.apply {
-                val stringIndex = getStringInstructionIndex("onboardingAnalytics")
-                val insertIndex =
-                    getTargetIndexWithMethodReferenceNameReversedOrThrow(stringIndex, "getString") + 2
+                val stringIndex = indexOfFirstStringInstructionOrThrow("onboardingAnalytics")
+                val insertIndex = indexOfFirstInstructionReversedOrThrow(stringIndex) {
+                    opcode == Opcode.INVOKE_VIRTUAL &&
+                            getReference<MethodReference>()?.name == "getString"
+                } + 2
                 val insertRegister =
                     getInstruction<OneRegisterInstruction>(insertIndex - 1).registerA
 
@@ -75,7 +78,7 @@ class SettingsBytecodePatch : BytecodePatch(
          */
         SharedSettingFingerprint.resultOrThrow().let {
             it.mutableMethod.apply {
-                val stringIndex = getTargetIndexOrThrow(Opcode.CONST_STRING)
+                val stringIndex = indexOfFirstInstructionOrThrow(Opcode.CONST_STRING)
                 val stringRegister = getInstruction<OneRegisterInstruction>(stringIndex).registerA
 
                 replaceInstruction(

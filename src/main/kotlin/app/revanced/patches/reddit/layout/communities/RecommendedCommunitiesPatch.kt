@@ -4,7 +4,6 @@ import app.revanced.patcher.BytecodeContext
 import app.revanced.patcher.annotation.Description
 import app.revanced.patcher.annotation.Name
 import app.revanced.patcher.extensions.addInstructions
-import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint.Companion.resolve
 import app.revanced.patcher.patch.BytecodePatch
 import app.revanced.patcher.patch.annotations.DependsOn
 import app.revanced.patcher.patch.annotations.Patch
@@ -15,8 +14,8 @@ import app.revanced.patches.reddit.utils.annotation.RedditCompatibility
 import app.revanced.patches.reddit.utils.integrations.Constants.PATCHES_PATH
 import app.revanced.patches.reddit.utils.settings.SettingsBytecodePatch.Companion.updateSettingsStatus
 import app.revanced.patches.reddit.utils.settings.SettingsPatch
+import app.revanced.util.alsoResolve
 import app.revanced.util.getInstruction
-import app.revanced.util.resultOrThrow
 
 @Patch
 @Name("Hide recommended communities shelf")
@@ -34,19 +33,17 @@ class RecommendedCommunitiesPatch : BytecodePatch(
 
     override fun execute(context: BytecodeContext) {
 
-        CommunityRecommendationSectionParentFingerprint.resultOrThrow().let { parentResult ->
-            CommunityRecommendationSectionFingerprint.also { it.resolve(context, parentResult.classDef) }.resultOrThrow()
-                .mutableMethod.apply {
-                    addInstructions(
-                        0,
-                        """
-                            invoke-static {}, $INTEGRATIONS_METHOD_DESCRIPTOR
-                            move-result v0
-                            if-eqz v0, :off
-                            return-void
-                            """, listOf(ExternalLabel("off", getInstruction(0)))
-                    )
-                }
+        CommunityRecommendationSectionFingerprint.alsoResolve(
+            context, CommunityRecommendationSectionParentFingerprint
+        ).mutableMethod.apply {
+            addInstructions(
+                0, """
+                    invoke-static {}, $INTEGRATIONS_METHOD_DESCRIPTOR
+                    move-result v0
+                    if-eqz v0, :off
+                    return-void
+                    """, listOf(ExternalLabel("off", getInstruction(0)))
+            )
         }
 
         updateSettingsStatus("enableRecommendedCommunitiesShelf")

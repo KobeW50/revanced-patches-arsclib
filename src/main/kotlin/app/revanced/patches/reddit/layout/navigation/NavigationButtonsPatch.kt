@@ -21,7 +21,7 @@ import app.revanced.patches.reddit.utils.settings.SettingsBytecodePatch.Companio
 import app.revanced.patches.reddit.utils.settings.SettingsPatch
 import app.revanced.util.findClass
 import app.revanced.util.getInstruction
-import app.revanced.util.getTargetIndexOrThrow
+import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.resultOrThrow
 import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.instruction.FiveRegisterInstruction
@@ -61,7 +61,7 @@ class NavigationButtonsPatch : BytecodePatch(
             bottomNavScreenFingerprintResult.let {
                 it.mutableMethod.apply {
                     val startIndex = indexOfGetDimensionPixelSize(this)
-                    val targetIndex = getTargetIndexOrThrow(startIndex, Opcode.NEW_INSTANCE)
+                    val targetIndex = indexOfFirstInstructionOrThrow(startIndex, Opcode.NEW_INSTANCE)
                     val targetReference = getInstruction<ReferenceInstruction>(targetIndex).reference.toString()
                     val bottomNavScreenMutableClass =
                         context.findClass(targetReference)!!.mutableClass

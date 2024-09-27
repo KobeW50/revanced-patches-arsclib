@@ -14,10 +14,13 @@ import app.revanced.patches.reddit.utils.integrations.Constants.PATCHES_PATH
 import app.revanced.patches.reddit.utils.settings.SettingsBytecodePatch.Companion.updateSettingsStatus
 import app.revanced.patches.reddit.utils.settings.SettingsPatch
 import app.revanced.util.getInstruction
-import app.revanced.util.getTargetIndexWithMethodReferenceNameOrThrow
+import app.revanced.util.getReference
+import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.resultOrThrow
+import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.instruction.FiveRegisterInstruction
 import org.jf.dexlib2.iface.instruction.OneRegisterInstruction
+import org.jf.dexlib2.iface.reference.MethodReference
 
 @Patch
 @Name("Remove subreddit dialog")
@@ -55,7 +58,10 @@ class SubRedditDialogPatch : BytecodePatch(
             it.mutableMethod.apply {
                 val backgroundTintIndex = RedditAlertDialogsFingerprint.indexOfSetBackgroundTintListInstruction(this)
                 val insertIndex =
-                    getTargetIndexWithMethodReferenceNameOrThrow(backgroundTintIndex, "setTextAppearance")
+                    indexOfFirstInstructionOrThrow(backgroundTintIndex) {
+                        opcode == Opcode.INVOKE_VIRTUAL &&
+                                getReference<MethodReference>()?.name == "setTextAppearance"
+                    }
                 val insertRegister = getInstruction<FiveRegisterInstruction>(insertIndex).registerC
 
                 addInstruction(

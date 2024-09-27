@@ -5,9 +5,9 @@ import app.revanced.patcher.fingerprint.method.impl.MethodFingerprint
 import app.revanced.patches.reddit.layout.navigation.fingerprints.BottomNavScreenHandlerFingerprint.indexOfGetItems
 import app.revanced.patches.reddit.layout.navigation.fingerprints.BottomNavScreenHandlerFingerprint.indexOfSetSelectedItemType
 import app.revanced.util.getReference
-import app.revanced.util.getTargetIndexWithMethodReferenceName
 import app.revanced.util.indexOfFirstInstruction
 import org.jf.dexlib2.AccessFlags
+import org.jf.dexlib2.Opcode
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.reference.MethodReference
 
@@ -26,5 +26,8 @@ internal object BottomNavScreenHandlerFingerprint : MethodFingerprint(
             reference != null && reference.endsWith("getItems()Ljava/util/List;")
         }
     fun indexOfSetSelectedItemType(methodDef: Method) =
-        methodDef.getTargetIndexWithMethodReferenceName("setSelectedItemType")
+        methodDef.indexOfFirstInstruction {
+            opcode == Opcode.INVOKE_VIRTUAL &&
+                    getReference<MethodReference>()?.name == "setSelectedItemType"
+        }
 }

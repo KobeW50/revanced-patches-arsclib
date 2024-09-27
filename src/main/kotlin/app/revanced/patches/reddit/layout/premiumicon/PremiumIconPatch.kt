@@ -20,16 +20,12 @@ class PremiumIconPatch : BytecodePatch(
 ) {
     override fun execute(context: BytecodeContext) {
 
-        PremiumIconFingerprint.resultOrThrow().let {
-            it.mutableMethod.apply {
-                addInstructions(
-                    0, """
-                        const/4 v0, 0x1
-                        return v0
-                        """
-                )
-            }
-        }
+        PremiumIconFingerprint.resultOrThrow().mutableMethod.addInstructions(
+            0, """
+                const/4 v0, 0x1
+                return v0
+                """
+        )
 
     }
 }
