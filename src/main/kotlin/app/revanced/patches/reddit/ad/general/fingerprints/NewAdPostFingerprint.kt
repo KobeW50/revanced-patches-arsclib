@@ -11,7 +11,6 @@ internal object NewAdPostFingerprint : MethodFingerprint(
     returnType = "L",
     accessFlags = AccessFlags.PUBLIC or AccessFlags.FINAL,
     strings = listOf(
-        "chain",
         "feedElement",
         "android_feed_freeform_render_variant",
     ),
