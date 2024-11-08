@@ -15,7 +15,6 @@ internal object FrequentUpdatesSheetScreenFingerprint : MethodFingerprint(
         Opcode.CHECK_CAST,
         Opcode.IF_EQZ
     ),
-    strings = listOf("inflater"),
     customFingerprint = { methodDef, _ ->
         methodDef.definingClass == "Lcom/reddit/screens/pager/FrequentUpdatesSheetScreen;"
     }
